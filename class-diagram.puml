@@ -1,0 +1,90 @@
+@startuml
+'skinparam noteBackgroundColor blue
+'skinparam noteBackgroundColor<<myStyle>> red
+'https://plantuml.com/class-diagram
+
+'metric_name ["{" label_name "=" `"` label_value `"`
+'{ "," label_name "=" `"` label_value `"` } [ "," ] "}"] value [ timestamp ]
+'
+'https://grafana.com/blog/2020/02/04/introduction-to-promql-the-prometheus-query-language/
+'race_duration_seconds_bucket{app="klt",le="21600"} 0
+'race_duration_seconds_bucket{app="klt",le="25200"} 2
+'race_duration_seconds_bucket{app="klt",le="28800"} 7
+'race_duration_seconds_bucket{app="klt",le="32400"} 7
+'race_duration_seconds_bucket{app="klt",le="36000"} 10
+'race_duration_seconds_bucket{app="klt",le="39600"} 10
+'race_duration_seconds_bucket{app="klt",le="+Inf"} 11
+'race_duration_seconds_count 11
+'race_duration_seconds_sum 511200
+
+'enum and info metric types
+'Info¶
+'
+'Info tracks key-value information, usually about a whole target.
+'
+'from prometheus_client import Info
+'i = Info('my_build_version', 'Description of info')
+'i.info({'version': '1.2.3', 'buildhost': 'foo@bar'})
+'Enum¶
+'
+'Enum tracks which of a set of states something is currently in.
+'
+'from prometheus_client import Enum
+'e = Enum('my_task_state', 'Description of enum',
+'        states=['starting', 'running', 'stopped'])
+'e.state('running')
+class Info{}
+
+class Gauge
+note right:value is incremented\nwith each result\nfrom queries
+class Counter
+note right:value is incremented\nwith each result\nfrom queries
+class Histogram {
+    *buckets[]
+}
+note left:each result from\nqueries is added to\nobservations\none bucket +Inf mandatory
+
+class Summary
+note left:each result from\nqueries is added to\nobservations
+
+class Enum {
+states[]:
+}
+
+note left:a list of string\nvalues for\npossible states
+
+class State{
+state
+}
+
+
+class Label {
+    name
+    values[]
+}
+
+
+
+abstract class AbstractMetric {
+    *name
+    *value
+    description
+    timestamp - milliseconds since unix epoch
+    labels[]:an optional list of label names to apply to the metric.
+}
+
+Class Bucket {
+    value
+}
+
+Histogram *-u- Bucket
+Enum *-- State
+AbstractMetric o-l- Label
+AbstractMetric<|-r- Gauge
+AbstractMetric<|-- Counter
+AbstractMetric<|-u- Histogram
+AbstractMetric<|-- Summary
+AbstractMetric<|-- Enum
+AbstractMetric<|-u- Info
+
+@enduml
